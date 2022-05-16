@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Service.Common;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -20,6 +21,6 @@ namespace Service.Models
         public string Lastname { get; set; }
 
         [Required]
-        public UserType UserType { get; set; }
+        public Roles UserType { get; set; }
     }
 }

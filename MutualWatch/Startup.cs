@@ -1,14 +1,21 @@
 ﻿
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+//using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Owin.Security.Google;
 using MutualWatch.Extensions;
 using Owin;
 using Serilog;
+using Service.Common;
 using Service.Data;
+using Service.DbModels;
 using Service.Models;
 using Service.ViewModels;
 using System.Text;
@@ -33,6 +40,15 @@ namespace CMS
 
         public void ConfigureAuth(IAppBuilder app)
         {
+            //app.UseFacebookAuthentication(
+            //    appId: "",
+            //    appSecret: "");
+
+            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
+            {
+                ClientId = "1038592390830-cma8434mfpfk6r8l63o6tf152sf812o0.apps.googleusercontent.com",
+                ClientSecret = "H4EGGL5xKHYQ1JcKbScXVzxS"
+            });
             // Enable the application to use a cookie to store information for the signed in user
             //app.UseCookieAuthentication(new Microsoft.Owin.Security.Cookies.CookieAuthenticationOptions
             //{
@@ -58,10 +74,15 @@ namespace CMS
             //services.AddRepoServices();
 
             services.AddDbContext<UsersDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
-            services.AddIdentity<IdentityUser, IdentityRole>(options => { options.SignIn.RequireConfirmedAccount = true;options.SignIn.RequireConfirmedEmail = false;
+            services.AddIdentity<IdentityUser, IdentityRole>(options => {
+                options.SignIn.RequireConfirmedAccount = true; options.SignIn.RequireConfirmedEmail = false;
                 options.Password.RequiredUniqueChars = 0;
             }).AddEntityFrameworkStores<UsersDbContext>();
-
+            //services.AddSession(options => {
+            //    options.IdleTimeout = TimeSpan.FromDays(7);//You can set Time  
+            //    options.Cookie.HttpOnly = true;
+            //    options.Cookie.IsEssential = true;
+            //});
 
             var jwtSection = Configuration.GetSection("JwtBearerTokenSettings");
             services.Configure<JwtBearerTokenSettings>(jwtSection);
@@ -119,6 +140,7 @@ namespace CMS
                     }
                 });
             });
+            
 
         }
 
@@ -140,7 +162,7 @@ namespace CMS
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
+            //app.UseSession();
             //app.UseCors(builder =>
 
             //           builder.WithOrigins(Configuration["CustomUrl"])
@@ -153,8 +175,13 @@ namespace CMS
             .AllowAnyMethod()
             .AllowAnyHeader());
             app.UseSwagger();
+           
             app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v2/swagger.json", "Mutual Watch"));
+            //app.UseFacebookAuthentication(
+            //   appId: "",
+            //   appSecret: "");
 
+            
             //app.UseHttpsRedirection();
 
             app.UseEndpoints(endpoints =>

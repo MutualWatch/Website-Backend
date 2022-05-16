@@ -1,24 +1,32 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Service.DbModels;
 
 namespace Service.Data
 {
-    public class UsersDbContext : IdentityDbContext<IdentityUser>
+    public partial class UsersDbContext : IdentityDbContext<IdentityUser>
     {
-        public UsersDbContext(DbContextOptions options):base(options)
+        public UsersDbContext(DbContextOptions options) : base(options)
         {
 
         }
 
+        public virtual DbSet<RefreshValue> RefreshValues { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<RefreshValue>(entity =>
+            {
+                entity.ToTable("RefreshValue");
+
+                entity.Property(e => e.RefreshToken).IsUnicode(false);
+
+                entity.Property(e => e.UserId).IsUnicode(false);
+            });
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
             {
                 b.Property<string>("Id")
@@ -266,7 +274,7 @@ namespace Service.Data
                     .IsRequired();
             });
 
-        }
 
+        }
     }
 }
